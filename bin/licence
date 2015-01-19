@@ -26,6 +26,9 @@ var minimist = require('minimist');
 var fs = require('fs');
 var process = require('process');
 var console = require('console');
+var parallel = require('run-parallel');
+
+var VALID_FILES = require('../valid-licences.js');
 
 var argv = minimist(process.argv.slice(2));
 var cwd = process.cwd();
@@ -47,90 +50,49 @@ var stream = readdirp({
     directoryFilter: ['!.git', '!node_modules', '!coverage']
 });
 
+var files = [];
+
 stream.on('data', function onData(e) {
-    checkFile(e.path);
+    files.push(e.path);
 });
+stream.once('end', processFiles);
 
-/*eslint max-len: 0*/
-var valid = [
-    '#!/usr/bin/env node\n' +
-    '\n' +
-    '// Copyright (c) 2015 Uber Technologies, Inc.\n' +
-    '//\n' +
-    '// Permission is hereby granted, free of charge, to any person obtaining a copy\n' +
-    '// of this software and associated documentation files (the "Software"), to deal\n' +
-    '// in the Software without restriction, including without limitation the rights\n' +
-    '// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n' +
-    '// copies of the Software, and to permit persons to whom the Software is\n' +
-    '// furnished to do so, subject to the following conditions:\n' +
-    '//\n' +
-    '// The above copyright notice and this permission notice shall be included in\n' +
-    '// all copies or substantial portions of the Software.\n' +
-    '//\n' +
-    '// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n' +
-    '// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n' +
-    '// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n' +
-    '// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n' +
-    '// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n' +
-    '// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\n' +
-    '// THE SOFTWARE.',
+function processFiles() {
+    parallel(files.map(function process(fileName) {
+        return checkFile.bind(null, fileName);
+    }), onProcessed);
 
-    '#!/usr/bin/env node\n' +
-    '// Copyright (c) 2015 Uber Technologies, Inc.\n' +
-    '//\n' +
-    '// Permission is hereby granted, free of charge, to any person obtaining a copy\n' +
-    '// of this software and associated documentation files (the "Software"), to deal\n' +
-    '// in the Software without restriction, including without limitation the rights\n' +
-    '// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n' +
-    '// copies of the Software, and to permit persons to whom the Software is\n' +
-    '// furnished to do so, subject to the following conditions:\n' +
-    '//\n' +
-    '// The above copyright notice and this permission notice shall be included in\n' +
-    '// all copies or substantial portions of the Software.\n' +
-    '//\n' +
-    '// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n' +
-    '// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n' +
-    '// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n' +
-    '// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n' +
-    '// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n' +
-    '// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\n' +
-    '// THE SOFTWARE.',
-
-    '// Copyright (c) 2015 Uber Technologies, Inc.\n' +
-    '//\n' +
-    '// Permission is hereby granted, free of charge, to any person obtaining a copy\n' +
-    '// of this software and associated documentation files (the "Software"), to deal\n' +
-    '// in the Software without restriction, including without limitation the rights\n' +
-    '// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n' +
-    '// copies of the Software, and to permit persons to whom the Software is\n' +
-    '// furnished to do so, subject to the following conditions:\n' +
-    '//\n' +
-    '// The above copyright notice and this permission notice shall be included in\n' +
-    '// all copies or substantial portions of the Software.\n' +
-    '//\n' +
-    '// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n' +
-    '// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n' +
-    '// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n' +
-    '// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n' +
-    '// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n' +
-    '// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\n' +
-    '// THE SOFTWARE.'
-];
-
-function checkFile(path) {
-    fs.readFile(path, 'utf8', onContent);
-
-    function onContent(err, content) {
+    function onProcessed(err, contents) {
         if (err) {
             throw err;
         }
 
-        var isValid = content.indexOf(valid[0]) === 0 ||
-            content.indexOf(valid[1]) === 0 ||
-            content.indexOf(valid[2]) === 0;
+        contents = contents.filter(Boolean);
+
+        if (argv.dry) {
+            return process.exit(1);
+        }
+
+        contents.forEach(function fixFile(obj) {
+            appendFile(obj.file, obj.content);
+        });
+    }
+}
+
+function checkFile(path, cb) {
+    fs.readFile(path, 'utf8', onContent);
+
+    function onContent(err, content) {
+        if (err) {
+            return cb(err);
+        }
+
+        var isValid = content.indexOf(VALID_FILES[0]) === 0 ||
+            content.indexOf(VALID_FILES[1]) === 0 ||
+            content.indexOf(VALID_FILES[2]) === 0;
 
         if (isValid) {
-            return null;
+            return cb(null);
         }
 
         var lines = content.split('\n');
@@ -140,16 +102,21 @@ function checkFile(path) {
             content: lines.slice(0, 3)
         });
 
-        if (argv.dry) {
-            return process.exit(1);
-        }
+        cb(null, {
+            file: path,
+            content: content
+        });
 
-        appendFile(path, content);
+        // if (argv.dry) {
+        //     return process.exit(1);
+        // }
+
+        // appendFile(path, content);
     }
 }
 
 function appendFile(path, content) {
-    var properContent = valid[2] + '\n\n' + content;
+    var properContent = VALID_FILES[2] + '\n\n' + content;
 
     fs.writeFile(path, properContent, onWrite);
 
