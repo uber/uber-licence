@@ -41,6 +41,8 @@ if (argv.help || argv.h) {
     console.log('  This binary will add a licence to the top');
     console.log('  of all your javascript files');
     console.log('');
+    console.log('  Options:')
+    console.log('    --dry does not write to files')
     process.exit(0);
 }
 

@@ -19,6 +19,33 @@ Utility to deal with Uber OSS licences
 Running the `uber-licence` binary adds licencing information
   to every javascript file in your project.
 
+You can also run `uber-licence --dry` where it does not
+  mutate any files and instead outputs -1
+
+## Recommended usage
+
+```js
+// package.json
+{
+  "scripts": {
+    "check-licence": "uber-licence --dry",
+    "add-licence": "uber-licence"
+  },
+  "devDependencies": {
+    "uber-licence": "uber/uber-licence",
+    "pre-commit": "0.0.9"
+  },
+  "pre-commit": [
+    "test",
+    "check-licence"
+  ],
+  "pre-commit.silent": true
+}
+```
+
+We recommend you add two scripts to your package and run
+  `check-licence` in a git pre commit.
+
 ## Installation
 
 `npm install uber-licence`
