@@ -87,9 +87,9 @@ function checkFile(path, cb) {
             return cb(err);
         }
 
-        var isValid = content.indexOf(VALID_FILES[0]) === 0 ||
-            content.indexOf(VALID_FILES[1]) === 0 ||
-            content.indexOf(VALID_FILES[2]) === 0;
+        var isValid = VALID_FILES.some(function checkHead(file) {
+            return content.indexOf(file) === 0;
+        });
 
         if (isValid) {
             return cb(null);
@@ -106,12 +106,6 @@ function checkFile(path, cb) {
             file: path,
             content: content
         });
-
-        // if (argv.dry) {
-        //     return process.exit(1);
-        // }
-
-        // appendFile(path, content);
     }
 }
 
