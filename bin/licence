@@ -24,19 +24,34 @@
 var readdirp = require('readdirp');
 var minimist = require('minimist');
 var fs = require('fs');
+var process = require('process');
+var console = require('console');
 
 var argv = minimist(process.argv.slice(2));
 var cwd = process.cwd();
+
+/*eslint no-process-exit: 0, no-console: 0*/
+// jscs:disable maximumLineLength
+if (argv.help || argv.h) {
+    console.log('uber-licence');
+    console.log('  ');
+    console.log('  This binary will add a licence to the top');
+    console.log('  of all your javascript files');
+    console.log('');
+    process.exit(0);
+}
+
 var stream = readdirp({
     root: cwd,
     fileFilter: ['*.js'],
-    directoryFilter: [ '!.git', '!node_modules', '!coverage' ]
+    directoryFilter: ['!.git', '!node_modules', '!coverage']
 });
 
 stream.on('data', function onData(e) {
     checkFile(e.path);
 });
 
+/*eslint max-len: 0*/
 var valid = [
     '#!/usr/bin/env node\n' +
     '\n' +
@@ -115,7 +130,7 @@ function checkFile(path) {
             content.indexOf(valid[2]) === 0;
 
         if (isValid) {
-            return;
+            return null;
         }
 
         var lines = content.split('\n');
@@ -126,7 +141,7 @@ function checkFile(path) {
         });
 
         if (argv.dry) {
-            return;
+            return process.exit(1);
         }
 
         appendFile(path, content);
@@ -148,4 +163,3 @@ function appendFile(path, content) {
         });
     }
 }
-

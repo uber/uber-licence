@@ -14,25 +14,10 @@ Utility to deal with Uber OSS licences
 
 ## Example
 
-```js
-var uberLicence = require("uber-licence");
+`uber-licence`
 
-// TODO. Show example
-```
-
-## Docs
-
-### `var someValue = uberLicence(/*arguments*/)`
-
-<!--
-  This is a jsig notation of your interface.
-  https://github.com/Raynos/jsig
--->
-```ocaml
-uber-licence := (arg: Any) => void
-```
-
-// TODO. State what the module does.
+Running the `uber-licence` binary adds licencing information
+  to every javascript file in your project.
 
 ## Installation
 
