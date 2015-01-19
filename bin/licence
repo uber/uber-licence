@@ -69,7 +69,7 @@ function processFiles() {
 
         contents = contents.filter(Boolean);
 
-        if (argv.dry) {
+        if (argv.dry && contents.length > 0) {
             return process.exit(1);
         }
 
