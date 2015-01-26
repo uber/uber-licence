@@ -19,8 +19,11 @@ Utility to deal with Uber OSS licences
 Running the `uber-licence` binary adds licencing information
   to every javascript file in your project.
 
-You can also run `uber-licence --dry` where it does not
-  mutate any files and instead outputs -1
+You can run `uber-licence --dry` where it does not
+  mutate any files and instead outputs -1.
+
+You can use `--file` and `--dir` to specify your own file 
+  and directory filters to select source files to consider.
 
 ## Recommended usage
 
