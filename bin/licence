@@ -46,10 +46,24 @@ if (argv.help || argv.h) {
     process.exit(0);
 }
 
+var fileFilter = ['*.js'];
+if (typeof argv.file === 'string') {
+    fileFilter = [argv.file];
+} else if (Array.isArray(argv.file)) {
+    fileFilter = argv.file;
+}
+
+var directoryFilter = ['!.git', '!node_modules', '!coverage'];
+if (typeof argv.dir === 'string') {
+    directoryFilter = [argv.dir];
+} else if (Array.isArray(argv.dir)) {
+    directoryFilter = argv.dir;
+}
+
 var stream = readdirp({
     root: cwd,
-    fileFilter: ['*.js'],
-    directoryFilter: ['!.git', '!node_modules', '!coverage']
+    fileFilter: fileFilter,
+    directoryFilter: directoryFilter
 });
 
 var files = [];
