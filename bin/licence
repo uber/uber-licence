@@ -111,6 +111,11 @@ function checkFile(path, cb) {
         if (err) {
             return cb(err);
         }
+        
+        if (content.length === 0) {
+            // Ignore empty files
+            return cb(null);
+        }
 
         var normalizedContent = content;
         if (commentStart) {
@@ -156,7 +161,11 @@ function appendFile(path, content) {
     if (commentStart) {
         var lines = license.split('\n');
         for (var i = 0, len = lines.length; i < len; i++) {
-            lines[i] = commentStart + ' ' + lines[i];
+            if (lines[i].length) {
+                lines[i] = commentStart + ' ' + lines[i];
+            } else {
+                lines[i] = commentStart + lines[i];
+            }
         }
         license = lines.join('\n');
     }
@@ -167,7 +176,9 @@ function appendFile(path, content) {
     var remainingLines = contentLines.slice(1).join('\n');
 
     var properContent;
-    if (firstLine.match(/^#!/m)) {
+    if (firstLine.match(/^#!|# ?encoding=/m)) {
+        // If the first line is a shebang or encoding=utf8 comment, add the
+        // license after it.
         properContent = firstLine + '\n\n' + license + '\n\n' + remainingLines;
     } else {
         properContent = license + '\n\n' + content;
