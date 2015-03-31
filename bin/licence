@@ -112,17 +112,18 @@ function checkFile(path, cb) {
             return cb(err);
         }
 
-        var cleanContent = content;
+        var normalizedContent = content;
         if (commentStart) {
-            var regex = new RegExp('^\\s*' + commentStart + '\\s*', 'mg');
-            cleanContent = content.replace(regex, '');
-            cleanContent.replace('\n', ' ');
-            cleanContent.replace(/\s+/, ' ');
+            var regex = new RegExp('^ *' + commentStart, 'gm');
+            normalizedContent = normalizedContent
+                .replace(regex, '')
+                .replace(/\n/g, ' ')
+                .replace(/\s+/g, ' ');
         }
 
         var isValid = VALID_LICENSES.some(function checkHead(licenseText) {
-            licenseText = licenseText.replace('\n', ' ').replace(/\s+/, ' ');
-            return cleanContent.indexOf(licenseText) > 0;
+            licenseText = licenseText.replace(/\n/g, ' ').replace(/\s+/g, ' ');
+            return normalizedContent.indexOf(licenseText) >= 0;
         });
 
         if (isValid) {
