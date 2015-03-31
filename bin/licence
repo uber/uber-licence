@@ -28,7 +28,7 @@ var process = require('process');
 var console = require('console');
 var parallel = require('run-parallel');
 
-var VALID_FILES = require('../valid-licences.js');
+var VALID_LICENSES = require('../valid-licences.js');
 
 var argv = minimist(process.argv.slice(2));
 var cwd = process.cwd();
@@ -38,11 +38,13 @@ var cwd = process.cwd();
 if (argv.help || argv.h) {
     console.log('uber-licence');
     console.log('  ');
-    console.log('  This binary will add a licence to the top');
-    console.log('  of all your javascript files');
+    console.log('  This binary will add a license to the top');
+    console.log('  of all your files');
     console.log('');
-    console.log('  Options:')
-    console.log('    --dry does not write to files')
+    console.log('  Options:');
+    console.log('    --dry      does not write to files');
+    console.log('    --file     pattern of files to modify');
+    console.log('    --dir      pattern for directories containing files');
     process.exit(0);
 }
 
@@ -53,7 +55,7 @@ if (typeof argv.file === 'string') {
     fileFilter = argv.file;
 }
 
-var directoryFilter = ['!.git', '!node_modules', '!coverage'];
+var directoryFilter = ['!.git', '!node_modules', '!coverage', '!env', '!.tox'];
 if (typeof argv.dir === 'string') {
     directoryFilter = [argv.dir];
 } else if (Array.isArray(argv.dir)) {
@@ -98,13 +100,29 @@ function processFiles() {
 function checkFile(path, cb) {
     fs.readFile(path, 'utf8', onContent);
 
+    var commentStart = null;
+    if (path.match(/\.js$/)) {
+        commentStart = '//';
+    } else if (path.match(/\.py$/)) {
+        commentStart = '#';
+    }
+
     function onContent(err, content) {
         if (err) {
             return cb(err);
         }
 
-        var isValid = VALID_FILES.some(function checkHead(file) {
-            return content.indexOf(file) === 0;
+        var cleanContent = content;
+        if (commentStart) {
+            var regex = new RegExp('^\\s*' + commentStart + '\\s*', 'mg');
+            cleanContent = content.replace(regex, '');
+            cleanContent.replace('\n', ' ');
+            cleanContent.replace(/\s+/, ' ');
+        }
+
+        var isValid = VALID_LICENSES.some(function checkHead(licenseText) {
+            licenseText = licenseText.replace('\n', ' ').replace(/\s+/, ' ');
+            return cleanContent.indexOf(licenseText) > 0;
         });
 
         if (isValid) {
@@ -126,10 +144,35 @@ function checkFile(path, cb) {
 }
 
 function appendFile(path, content) {
-    var properContent = VALID_FILES[2] + '\n\n' + content;
+    var commentStart = null;
+    if (path.match(/\.js$/)) {
+        commentStart = '//';
+    } else if (path.match(/\.py$/)) {
+        commentStart = '#';
+    }
+
+    var license = VALID_LICENSES[2];
+    if (commentStart) {
+        var lines = license.split('\n');
+        for (var i = 0, len = lines.length; i < len; i++) {
+            lines[i] = commentStart + ' ' + lines[i];
+        }
+        license = lines.join('\n');
+    }
+
+    var contentLines = content.split('\n');
+
+    var firstLine = contentLines[0];
+    var remainingLines = contentLines.slice(1).join('\n');
+
+    var properContent;
+    if (firstLine.match(/^#!/m)) {
+        properContent = firstLine + '\n\n' + license + '\n\n' + remainingLines;
+    } else {
+        properContent = license + '\n\n' + content;
+    }
 
     fs.writeFile(path, properContent, onWrite);
-
     function onWrite(err) {
         if (err) {
             throw err;
