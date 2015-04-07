@@ -98,7 +98,7 @@ function processFiles() {
 }
 
 function getCommentStart(path) {
-    if (path.match(/\.(js|go)$/)) {
+    if (path.match(/\.(js|go|java)$/)) {
         return '//';
     } else if (path.match(/\.py$/)) {
         return '#';
