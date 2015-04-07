@@ -97,21 +97,25 @@ function processFiles() {
     }
 }
 
+function getCommentStart(path) {
+    if (path.match(/\.(js|go)$/)) {
+        return '//';
+    } else if (path.match(/\.py$/)) {
+        return '#';
+    }
+    return null;
+}
+
 function checkFile(path, cb) {
     fs.readFile(path, 'utf8', onContent);
 
-    var commentStart = null;
-    if (path.match(/\.js$/)) {
-        commentStart = '//';
-    } else if (path.match(/\.py$/)) {
-        commentStart = '#';
-    }
+    var commentStart = getCommentStart(path);
 
     function onContent(err, content) {
         if (err) {
             return cb(err);
         }
-        
+
         if (content.length === 0) {
             // Ignore empty files
             return cb(null);
@@ -150,12 +154,7 @@ function checkFile(path, cb) {
 }
 
 function appendFile(path, content) {
-    var commentStart = null;
-    if (path.match(/\.js$/)) {
-        commentStart = '//';
-    } else if (path.match(/\.py$/)) {
-        commentStart = '#';
-    }
+    var commentStart = getCommentStart(path);
 
     var license = VALID_LICENSES[2];
     if (commentStart) {
