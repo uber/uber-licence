@@ -100,7 +100,7 @@ function processFiles() {
 function getCommentStart(path) {
     if (path.match(/\.(js|go|java)$/)) {
         return '//';
-    } else if (path.match(/\.(py[x]|pxd)$/)) {
+    } else if (path.match(/\.(pyx?|pxd)$/)) {
         return '#';
     }
     return null;
