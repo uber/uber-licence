@@ -46,6 +46,8 @@ if (argv.help || argv.h) {
     console.log('    --dry      does not write to files');
     console.log('    --file     pattern of files to modify');
     console.log('    --dir      pattern for directories containing files');
+    console.log('    --license  intended license (file)');
+    console.log('    --legacy   licenses to replace');
     process.exit(0);
 }
 
@@ -63,15 +65,55 @@ if (typeof argv.dir === 'string') {
     directoryFilter = argv.dir;
 }
 
+var licenses = null;
+
+if (typeof argv.license === 'string') {
+    licenses = licenses || [];
+    licenses.push(argv.license);
+} else if (Array.isArray(argv.license)) {
+    licenses = licenses || [];
+    Array.prototype.push.apply(licenses, argv.license);
+}
+
+// licence non-American spelling
+if (typeof argv.licence === 'string') {
+    licenses = licenses || [];
+    licenses.push(argv.licence);
+} else if (Array.isArray(argv.licence)) {
+    licenses = licenses || [];
+    Array.prototype.push.apply(licenses, argv.licence);
+}
+
+if (typeof argv.legacy === 'string') {
+    licenses = licenses || [];
+    licenses.push(argv.legacy);
+} else if (Array.isArray(argv.legacy)) {
+    licenses = licenses || [];
+    Array.prototype.push.apply(licenses, argv.legacy);
+}
+
+if (licenses) {
+    for (var i = 0; i < licenses.length; i++) {
+        // Replace file names with content of files
+        licenses[i] = fs.readFileSync(licenses[i], 'utf8');
+    }
+} else {
+    // In the absense of any command line arguments,
+    // use the Uber defaults.
+    licenses = VALID_LICENSES;
+}
+
 var licenseFixer = new LicenseFixer({
     dry: argv.dry
 });
 
 // Set the intended license text
-licenseFixer.setLicense(VALID_LICENSES[0]);
-// Add a license to match and replace
+licenseFixer.setLicense(licenses[0]);
+// Add a license to match and replace.
 // There can be multiple recognized licenses, for migration purposes.
-licenseFixer.addLicense(VALID_LICENSES[0]);
+for (var i = 0; i < licenses.length; i++) {
+    licenseFixer.addLicense(licenses[i]);
+}
 
 readTree({
     root: cwd,
