@@ -62,20 +62,19 @@ if (typeof argv.dir === 'string') {
     directoryFilter = argv.dir;
 }
 
-var stream = readdirp({
+readTree({
     root: cwd,
     fileFilter: fileFilter,
     directoryFilter: directoryFilter
-});
+}, processFiles);
 
-var files = [];
+function processFiles(err, files) {
+    if (err) {
+        console.error(err.message);
+        process.exit(1);
+        return;
+    }
 
-stream.on('data', function onData(e) {
-    files.push(e.path);
-});
-stream.once('end', processFiles);
-
-function processFiles() {
     parallel(files.map(function process(fileName) {
         return checkFile.bind(null, fileName);
     }), onProcessed);
@@ -192,5 +191,19 @@ function appendFile(path, content) {
         console.log('fixed file', {
             path: path
         });
+    }
+}
+
+function readTree(options, callback) {
+    var stream = readdirp(options);
+    var files = [];
+    stream.on('data', onData);
+    stream.on('end', onEnd);
+    stream.on('error', onEnd);
+    function onData(event) {
+        files.push(event.path);
+    }
+    function onEnd(err) {
+        callback(err, files);
     }
 }
