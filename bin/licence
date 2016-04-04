@@ -48,6 +48,8 @@ if (argv.help || argv.h) {
     console.log('    --dir      pattern for directories containing files');
     console.log('    --license  intended license (file)');
     console.log('    --legacy   licenses to replace');
+    console.log('    --verbose  log skipped and empty files');
+    console.log('    --silent   do not log fixed files');
     process.exit(0);
 }
 
