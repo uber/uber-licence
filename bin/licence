@@ -27,6 +27,7 @@ var fs = require('fs');
 var process = require('process');
 var console = require('console');
 var parallel = require('run-parallel');
+var LicenseFixer = require('../license-fixer');
 
 var VALID_LICENSES = require('../valid-licences.js');
 
@@ -45,6 +46,10 @@ if (argv.help || argv.h) {
     console.log('    --dry      does not write to files');
     console.log('    --file     pattern of files to modify');
     console.log('    --dir      pattern for directories containing files');
+    console.log('    --license  intended license (file)');
+    console.log('    --legacy   licenses to replace');
+    console.log('    --verbose  log skipped and empty files');
+    console.log('    --silent   do not log fixed files');
     process.exit(0);
 }
 
@@ -62,135 +67,94 @@ if (typeof argv.dir === 'string') {
     directoryFilter = argv.dir;
 }
 
-var stream = readdirp({
+var licenses = null;
+
+if (typeof argv.license === 'string') {
+    licenses = licenses || [];
+    licenses.push(argv.license);
+} else if (Array.isArray(argv.license)) {
+    licenses = licenses || [];
+    Array.prototype.push.apply(licenses, argv.license);
+}
+
+// licence non-American spelling
+if (typeof argv.licence === 'string') {
+    licenses = licenses || [];
+    licenses.push(argv.licence);
+} else if (Array.isArray(argv.licence)) {
+    licenses = licenses || [];
+    Array.prototype.push.apply(licenses, argv.licence);
+}
+
+if (typeof argv.legacy === 'string') {
+    licenses = licenses || [];
+    licenses.push(argv.legacy);
+} else if (Array.isArray(argv.legacy)) {
+    licenses = licenses || [];
+    Array.prototype.push.apply(licenses, argv.legacy);
+}
+
+if (licenses) {
+    for (var i = 0; i < licenses.length; i++) {
+        // Replace file names with content of files
+        licenses[i] = fs.readFileSync(licenses[i], 'utf8');
+    }
+} else {
+    // In the absense of any command line arguments,
+    // use the Uber defaults.
+    licenses = VALID_LICENSES;
+}
+
+var licenseFixer = new LicenseFixer({
+    dry: argv.dry,
+    silent: argv.silent,
+    verbose: argv.verbose
+});
+
+// Set the intended license text
+licenseFixer.setLicense(licenses[0]);
+// Add a license to match and replace.
+// There can be multiple recognized licenses, for migration purposes.
+for (var i = 0; i < licenses.length; i++) {
+    licenseFixer.addLicense(licenses[i]);
+}
+
+readTree({
     root: cwd,
     fileFilter: fileFilter,
     directoryFilter: directoryFilter
-});
+}, processFiles);
 
-var files = [];
-
-stream.on('data', function onData(e) {
-    files.push(e.path);
-});
-stream.once('end', processFiles);
-
-function processFiles() {
-    parallel(files.map(function process(fileName) {
-        return checkFile.bind(null, fileName);
-    }), onProcessed);
-
-    function onProcessed(err, contents) {
-        if (err) {
-            throw err;
-        }
-
-        contents = contents.filter(Boolean);
-
-        if (argv.dry && contents.length > 0) {
-            return process.exit(1);
-        }
-
-        contents.forEach(function fixFile(obj) {
-            appendFile(obj.file, obj.content);
-        });
+function readTree(options, callback) {
+    var stream = readdirp(options);
+    var files = [];
+    stream.on('data', onData);
+    stream.on('end', onEnd);
+    stream.on('error', onEnd);
+    function onData(event) {
+        files.push(event.path);
+    }
+    function onEnd(err) {
+        callback(err, files);
     }
 }
 
-function getCommentStart(path) {
-    if (path.match(/\.(js|go|java)$/)) {
-        return '//';
-    } else if (path.match(/\.(pyx?|pxd)$/)) {
-        return '#';
-    }
-    return null;
-}
-
-function checkFile(path, cb) {
-    fs.readFile(path, 'utf8', onContent);
-
-    var commentStart = getCommentStart(path);
-
-    function onContent(err, content) {
-        if (err) {
-            return cb(err);
-        }
-
-        if (content.length === 0) {
-            // Ignore empty files
-            return cb(null);
-        }
-
-        var normalizedContent = content;
-        if (commentStart) {
-            var regex = new RegExp('^ *' + commentStart, 'gm');
-            normalizedContent = normalizedContent
-                .replace(regex, '')
-                .replace(/\n/g, ' ')
-                .replace(/\s+/g, ' ');
-        }
-
-        var isValid = VALID_LICENSES.some(function checkHead(licenseText) {
-            licenseText = licenseText.replace(/\n/g, ' ').replace(/\s+/g, ' ');
-            return normalizedContent.indexOf(licenseText) >= 0;
-        });
-
-        if (isValid) {
-            return cb(null);
-        }
-
-        var lines = content.split('\n');
-
-        console.log('invalid file', {
-            file: path,
-            content: lines.slice(0, 3)
-        });
-
-        cb(null, {
-            file: path,
-            content: content
-        });
-    }
-}
-
-function appendFile(path, content) {
-    var commentStart = getCommentStart(path);
-
-    var license = VALID_LICENSES[2];
-    if (commentStart) {
-        var lines = license.split('\n');
-        for (var i = 0, len = lines.length; i < len; i++) {
-            if (lines[i].length) {
-                lines[i] = commentStart + ' ' + lines[i];
-            } else {
-                lines[i] = commentStart + lines[i];
-            }
-        }
-        license = lines.join('\n');
+function processFiles(err, files) {
+    if (err) {
+        console.error(err.message);
+        process.exit(1);
+        return;
     }
 
-    var contentLines = content.split('\n');
+    var fixed = 0;
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        fixed = fixed + licenseFixer.fixFile(file);
+    }
 
-    var firstLine = contentLines[0];
-    var remainingLines = contentLines.slice(1).join('\n');
-
-    var properContent;
-    if (firstLine.match(/^#!|# ?encoding=/m)) {
-        // If the first line is a shebang or encoding=utf8 comment, add the
-        // license after it.
-        properContent = firstLine + '\n\n' + license + '\n\n' + remainingLines;
+    if (argv.dry) {
+        process.exit(fixed);
     } else {
-        properContent = license + '\n\n' + content;
-    }
-
-    fs.writeFile(path, properContent, onWrite);
-    function onWrite(err) {
-        if (err) {
-            throw err;
-        }
-
-        console.log('fixed file', {
-            path: path
-        });
+        process.exit(0);
     }
 }
