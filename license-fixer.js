@@ -20,7 +20,6 @@
 
 'use strict';
 
-var readdirp = require('readdirp');
 var fs = require('fs');
 
 module.exports = LicenseFixer;
