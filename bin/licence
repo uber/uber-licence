@@ -148,5 +148,9 @@ function processFiles(err, files) {
         fixed = fixed + licenseFixer.fixFile(file);
     }
 
-    process.exit(fixed);
+    if (argv.dry) {
+        process.exit(fixed);
+    } else {
+        process.exit(0);
+    }
 }
