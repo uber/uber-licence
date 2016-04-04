@@ -59,8 +59,12 @@ function trimToCopyright(license) {
 }
 
 function relaxLicenseTerm(term) {
+    // There has been at least one occasion where someone replaced all single
+    // quotes with double quotes throughout a file and got an extra license.
     return '\\s*((//|#)\\s*)*' + // wrap around any comment or spacing
-        regexpEscape(term).replace(/\d{4}/, '\\d{4}') + // dates to date patterns
+        regexpEscape(term)
+            .replace(/\d{4}/g, '\\d{4}') // dates to date patterns
+            .replace(/['"]/g, '[\'"]') + // relax quotes
         '\\s*';
 }
 
