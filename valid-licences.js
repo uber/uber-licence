@@ -46,7 +46,7 @@ var valid = [
     'THE SOFTWARE.',
 
     // Just Uber variant
-    'Copyright (c) 2015 Uber\n' +
+    'Copyright (c) 2016 Uber\n' +
     '\n' +
     'Permission is hereby granted, free of charge, to any person obtaining a copy\n' +
     'of this software and associated documentation files (the "Software"), to deal\n' +
