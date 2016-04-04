@@ -106,7 +106,9 @@ if (licenses) {
 }
 
 var licenseFixer = new LicenseFixer({
-    dry: argv.dry
+    dry: argv.dry,
+    silent: argv.silent,
+    verbose: argv.verbose
 });
 
 // Set the intended license text
