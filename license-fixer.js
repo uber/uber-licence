@@ -109,7 +109,7 @@ LicenseFixer.prototype.fixContent = function fixContent(file, content) {
     // separate the preamble shebang or such
     // TODO distinguish # encoding lines from license lines
     var preamble = '';
-    if (content.match(/^#!|#\s*encoding=/m)) {
+    if (content.match(/^#!|#\s*(en)?coding=/m)) {
         var index = content.indexOf('\n');
         if (index >= 0) {
             preamble = content.slice(0, index + 1);
