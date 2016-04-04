@@ -60,7 +60,7 @@ if (typeof argv.file === 'string') {
     fileFilter = argv.file;
 }
 
-var directoryFilter = ['!.git', '!node_modules', '!coverage', '!env', '!.tox'];
+var directoryFilter = ['!.git', '!node_modules', '!coverage', '!env', '!.tox', '!vendor', '!Godeps'];
 if (typeof argv.dir === 'string') {
     directoryFilter = [argv.dir];
 } else if (Array.isArray(argv.dir)) {
