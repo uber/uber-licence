@@ -45,7 +45,7 @@ function createLicenseExpression(license) {
     // Transform the license into a regular expression that matches the exact
     // license as well as similar licenses, with different dates and line
     // wraps.
-    var pattern = license.split(/\s+/).map(relaxLicenseTerm).join('');
+    var pattern = license.split(/\s+/).map(relaxLicenseTerm).join('') + '\\s*';
     return new RegExp(pattern, 'gmi');
 }
 
@@ -64,8 +64,7 @@ function relaxLicenseTerm(term) {
     return '\\s*((//|#)\\s*)*' + // wrap around any comment or spacing
         regexpEscape(term)
             .replace(/\d{4}/g, '\\d{4}') // dates to date patterns
-            .replace(/['"]/g, '[\'"]') + // relax quotes
-        '\\s*';
+            .replace(/['"]/g, '[\'"]'); // relax quotes
 }
 
 function regexpEscape(string) {
