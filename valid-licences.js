@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Uber Technologies, Inc.
+// Copyright (c) 2017 Uber Technologies, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 var valid = [
     // Current pattern
-    'Copyright (c) 2016 Uber Technologies, Inc.\n' +
+    'Copyright (c) 2017 Uber Technologies, Inc.\n' +
     '\n' +
     'Permission is hereby granted, free of charge, to any person obtaining a copy\n' +
     'of this software and associated documentation files (the "Software"), to deal\n' +
@@ -46,7 +46,7 @@ var valid = [
     'THE SOFTWARE.',
 
     // Just Uber variant
-    'Copyright (c) 2016 Uber\n' +
+    'Copyright (c) 2017 Uber\n' +
     '\n' +
     'Permission is hereby granted, free of charge, to any person obtaining a copy\n' +
     'of this software and associated documentation files (the "Software"), to deal\n' +
