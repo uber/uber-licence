@@ -25,7 +25,7 @@
 
 var valid = [
     // Current pattern
-    'Copyright (c) 2016 Uber Technologies, Inc.\n' +
+    'Copyright (c) ' + (new Date()).getFullYear().toString() + ' Uber Technologies, Inc.\n' +
     '\n' +
     'Permission is hereby granted, free of charge, to any person obtaining a copy\n' +
     'of this software and associated documentation files (the "Software"), to deal\n' +
