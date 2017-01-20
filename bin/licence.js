@@ -26,7 +26,7 @@ var minimist = require('minimist');
 var fs = require('fs');
 var process = require('process');
 var console = require('console');
-var parallel = require('run-parallel');
+// var parallel = require('run-parallel');
 var LicenseFixer = require('../license-fixer');
 
 var VALID_LICENSES = require('../valid-licences.js');
@@ -147,8 +147,8 @@ function processFiles(err, files) {
     }
 
     var fixed = 0;
-    for (var i = 0; i < files.length; i++) {
-        var file = files[i];
+    for (var filesIndex = 0; filesIndex < files.length; filesIndex++) {
+        var file = files[filesIndex];
         fixed = fixed + licenseFixer.fixFile(file);
     }
 
