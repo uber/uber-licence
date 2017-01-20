@@ -1,7 +1,6 @@
 # uber-licence
-
+[![NPM version][npm-version-image]][npm-version-url] [![build status][build-png]][build]
 <!--
-    [![build status][build-png]][build]
     [![Coverage Status][cover-png]][cover]
     [![Davis Dependency status][dep-png]][dep]
 -->
@@ -59,12 +58,13 @@ We recommend you add two scripts to your package and run
 
 ## Contributors
 
- - Raynos
-
+ - [Raynos](https://github.com/raynos)
+ - [Kriskowal](https://github.com/kriskowal)
+ - [Dawsonbotsford](https://github.com/dawsonbotsford)
 
 ## MIT Licenced
 
-  [build-png]: https://secure.travis-ci.org/uber/uber-licence.png
+  [build-png]: https://secure.travis-ci.org/uber/uber-licence.svg
   [build]: https://travis-ci.org/uber/uber-licence
   [cover-png]: https://coveralls.io/repos/uber/uber-licence/badge.png
   [cover]: https://coveralls.io/r/uber/uber-licence
@@ -74,3 +74,5 @@ We recommend you add two scripts to your package and run
   [tes]: https://ci.testling.com/uber/uber-licence
   [npm-png]: https://nodei.co/npm/uber-licence.png?stars&downloads
   [npm]: https://nodei.co/npm/uber-licence
+  [npm-version-image]: https://badge.fury.io/js/uber-licence.svg
+  [npm-version-url]: https://npmjs.org/package/uber-licence
