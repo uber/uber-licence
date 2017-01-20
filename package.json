@@ -46,7 +46,7 @@
     "view-cover": "istanbul report html && opn ./coverage/index.html"
   },
   "engine": {
-    "node": ">= 0.8.x"
+    "node": ">=10.0.0"
   },
   "uber-ngen-version": "3.11.2"
 }
