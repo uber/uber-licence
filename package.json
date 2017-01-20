@@ -22,13 +22,16 @@
     "update-notifier": "^1.0.3"
   },
   "devDependencies": {
-    "tape": "^2.12.3",
-    "jshint": "^2.5.0",
-    "istanbul": "^0.2.7",
-    "tap-spec": "^0.1.8",
-    "pre-commit": "0.0.5",
     "coveralls": "^2.10.0",
-    "opn": "^0.1.2"
+    "escape-string-regexp": "^1.0.5",
+    "fs-extra": "^2.0.0",
+    "istanbul": "^0.2.7",
+    "jshint": "^2.5.0",
+    "opn": "^0.1.2",
+    "pre-commit": "0.0.5",
+    "tap-spec": "^0.1.8",
+    "tape": "^2.12.3",
+    "temp": "^0.8.3"
   },
   "licenses": [
     {
@@ -37,8 +40,9 @@
     }
   ],
   "scripts": {
-    "test": "npm run jshint && node test/index.js | tap-spec",
-    "jshint": "jshint --verbose $(git ls-files | grep '\\.js$')",
+    "test": "npm run jshint && npm run tape",
+    "tape": "node test/index.js | tap-spec",
+    "jshint": "jshint .",
     "cover": "istanbul cover --report none --print detail test/index.js",
     "view-cover": "istanbul report html && opn ./coverage/index.html"
   },
