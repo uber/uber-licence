@@ -119,7 +119,6 @@ LicenseFixer.prototype.fixContent = function fixContent(file, content) {
     // Remove old licenses
     for (var i = 0; i < this.licenseExpressions.length; i++) {
         // string replace hangs in some pathelogical cases of repeated licenses
-        // content = content.replace(this.licenseExpressions[i], '');
         var match = this.licenseExpressions[i].exec(content);
         while (match) {
             content = content.slice(0, match.index) + content.slice(match.index + match[0].length);
