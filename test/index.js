@@ -8,7 +8,7 @@ var escape = require('escape-string-regexp');
 // Automatically track and cleanup files at exit
 temp.track();
 
-var uberLicensePath = path.join(__dirname, '..', 'bin', 'licence');
+var uberLicensePath = path.join(__dirname, '..', 'bin', 'licence.js');
 
 tape('add-header-none', function (t) {
 	var fixturePath = path.join(__dirname, 'fixtures', 'add-header-none');
@@ -41,7 +41,34 @@ tape('add-header-none', function (t) {
 	});
 });
 
-// tape('dont-add-header', function (t) {
-// 	t.pass();
-// 	t.end();
-// });
+tape('dont-add-header', function (t) {
+	t.plan(1);
+	var fixturePath = path.join(__dirname, 'fixtures', 'dont-add-header');
+	var inputFilePath = path.join(fixturePath, 'input.js');
+	var outputFileContent = fs.readFileSync(path.join(fixturePath, 'output.js'), 'utf8');
+
+	// remove the dynamic year portion of the header comment
+	var consistantOutputString = outputFileContent.substring(outputFileContent.indexOf('Permission'));
+	var outputRegex = new RegExp(escape(consistantOutputString));
+
+	temp.mkdir('dont-add-header', function(mkTempErr, dirPath) {
+	  if (mkTempErr) {
+	  	return console.error('mkTempErr: ' + mkTempErr);
+	  }
+		fs.copy(inputFilePath, path.join(dirPath, 'input.js'), function (copyErr) {
+		  if (copyErr) {
+		  	return console.error('copyErr: ' + copyErr);
+		  }
+		  process.chdir(dirPath);
+			var command = uberLicensePath;
+		  exec(command, function(execErr) {
+		  	if (execErr instanceof Error) {
+		  		throw execErr;
+		  	}
+				var inputFileContent = fs.readFileSync('input.js', 'utf8');
+				t.true(outputRegex.test(inputFileContent), 'should prepend header');
+				t.end();
+		  });
+		});
+	});
+});
