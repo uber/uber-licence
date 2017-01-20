@@ -27,6 +27,12 @@ var fs = require('fs');
 var process = require('process');
 var console = require('console');
 var parallel = require('run-parallel');
+
+// automatically prompt user to update if on older version
+var updateNotifier = require('update-notifier');
+var pkg = require('../package.json');
+updateNotifier({pkg}).notify();
+
 var LicenseFixer = require('../license-fixer');
 
 var VALID_LICENSES = require('../valid-licences.js');
