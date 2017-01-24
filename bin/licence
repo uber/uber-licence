@@ -31,7 +31,7 @@ var parallel = require('run-parallel');
 // automatically prompt user to update if on older version
 var updateNotifier = require('update-notifier');
 var pkg = require('../package.json');
-updateNotifier({pkg}).notify();
+updateNotifier({pkg: pkg}).notify();
 
 var LicenseFixer = require('../license-fixer');
 
