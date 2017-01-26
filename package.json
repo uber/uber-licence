@@ -12,23 +12,25 @@
     "email": "raynos2@gmail.com"
   },
   "bin": {
-    "uber-licence": "bin/licence"
+    "uber-licence": "bin/licence.js"
   },
   "dependencies": {
     "minimist": "^1.1.0",
     "process": "^0.10.0",
     "readdirp": "^2.1.0",
-    "run-parallel": "^1.0.0",
     "update-notifier": "^1.0.3"
   },
   "devDependencies": {
-    "tape": "^2.12.3",
-    "jshint": "^2.5.0",
-    "istanbul": "^0.2.7",
-    "tap-spec": "^0.1.8",
-    "pre-commit": "0.0.5",
     "coveralls": "^2.10.0",
-    "opn": "^0.1.2"
+    "escape-string-regexp": "^1.0.5",
+    "fs-extra": "^2.0.0",
+    "istanbul": "^0.2.7",
+    "jshint": "^2.5.0",
+    "opn": "^0.1.2",
+    "pre-commit": "0.0.5",
+    "tap-spec": "^0.1.8",
+    "tape": "^2.12.3",
+    "temp": "^0.8.3"
   },
   "licenses": [
     {
@@ -37,16 +39,14 @@
     }
   ],
   "scripts": {
-    "test": "echo 'ok'",
-    "unit-test": "node test/index.js | tap-spec",
-    "jshint-pre-commit": "jshint --verbose $(git diff --cached --name-only | grep '\\.js$')",
-    "jshint": "jshint --verbose $(git ls-files | grep '\\.js$')",
+    "test": "npm run jshint && npm run tape",
+    "tape": "node test/index.js | tap-spec",
+    "jshint": "jshint .",
     "cover": "istanbul cover --report none --print detail test/index.js",
-    "view-cover": "istanbul report html && opn ./coverage/index.html",
-    "travis": "npm run cover -s && istanbul report lcov && ((cat coverage/lcov.info | coveralls) || exit 0)"
+    "view-cover": "istanbul report html && opn ./coverage/index.html"
   },
   "engine": {
-    "node": ">= 0.8.x"
+    "node": ">=10.0.0"
   },
   "uber-ngen-version": "3.11.2"
 }

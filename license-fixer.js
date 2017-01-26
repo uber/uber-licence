@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Uber Technologies, Inc.
+// Copyright (c) 2017 Uber Technologies, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -67,11 +67,11 @@ function relaxLicenseTerm(term) {
             .replace(/['"]/g, '[\'"]'); // relax quotes
 }
 
+var regexpEscapePattern = /[|\\{}()[\]^$+*?.]/g;
+
 function regexpEscape(string) {
     return string.replace(regexpEscapePattern, '\\$&');
 }
-
-var regexpEscapePattern = /[|\\{}()[\]^$+*?.]/g;
 
 LicenseFixer.prototype.setLicense = function setLicense(license) {
     license = trimToCopyright(license);
@@ -119,15 +119,15 @@ LicenseFixer.prototype.fixContent = function fixContent(file, content) {
     // Remove old licenses
     for (var i = 0; i < this.licenseExpressions.length; i++) {
         // string replace hangs in some pathelogical cases of repeated licenses
-        // content = content.replace(this.licenseExpressions[i], '');
-        var match;
-        while (match = this.licenseExpressions[i].exec(content)) {
+        var match = this.licenseExpressions[i].exec(content);
+        while (match) {
             content = content.slice(0, match.index) + content.slice(match.index + match[0].length);
+            match = this.licenseExpressions[i].exec(content);
         }
     }
 
     var license = this.getLicenseForFile(file);
-    if (license == null) {
+    if (license === null) {
         if (!this.silent) {
             console.error('unrecognized file type', file);
         }
@@ -153,7 +153,7 @@ LicenseFixer.prototype.fixFile = function fixFile(file) {
 
     var content = this.fixContent(file, original);
 
-    if (content == null) {
+    if (content === null) {
         // Return true on error so dry run fails
         return true;
     }
