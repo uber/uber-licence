@@ -88,3 +88,30 @@ tape('dont-add-header', function (t) {
 		});
 	});
 });
+
+tape('add-flow-header', function (t) {
+	t.plan(1);
+	var fixturePath = path.join(__dirname, 'fixtures', 'add-flow-header');
+	var inputFilePath = path.join(fixturePath, 'input.js');
+	var outputFileContent = fs.readFileSync(path.join(fixturePath, 'output.js'), 'utf8');
+
+	// remove the dynamic year portion of the header comment
+	var consistantOutputString = outputFileContent.substring(outputFileContent.indexOf('Permission'));
+	var outputRegex = new RegExp(esc(consistantOutputString));
+
+	temp.mkdir('add-flow-header', function(mkTempErr, dirPath) {
+	  if (mkTempErr) {
+	  	return console.error('mkTempErr: ' + mkTempErr);
+	  }
+	  process.chdir(dirPath);
+	  fs.copySync(inputFilePath, 'input.js');
+	  exec(uberLicensePath, function(execErr) {
+	  	if (execErr instanceof Error) {
+	  		throw execErr;
+	  	}
+			var inputFileContent = fs.readFileSync('input.js', 'utf8');
+			t.true(outputRegex.test(inputFileContent), 'should add header after flow header');
+			t.end();
+		});
+	});
+});
