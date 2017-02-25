@@ -106,24 +106,24 @@ LicenseFixer.prototype.getLicenseForFile = function getLicenseForFile(file) {
 
 LicenseFixer.prototype.fixContent = function fixContent(file, content) {
     var preamble = '';
-    // separate first line if it is @flow header
-    if (content.match(/^\/\/ @flow|^\/\* @flow \*\//m)) {
-        var flowIndex = content.indexOf('\n');
-        if (flowIndex >= 0) {
-            preamble = content.slice(0, flowIndex + 1);
-            content = content.slice(flowIndex + 1).trim() + '\n';
-        }
-    }
-    
-    // separate the preamble shebang or such
-    // TODO distinguish # encoding lines from license lines
-    else if (content.match(/^#!|#\s*(en)?coding=/m)) {
+    // Check for shebang
+    if (content.match(/^#!|#\s*(en)?coding=/m)) {
         var shebangIndex = content.indexOf('\n');
         if (shebangIndex >= 0) {
-            preamble = content.slice(0, shebangIndex + 1);
+            preamble += content.slice(0, shebangIndex + 1);
             content = content.slice(shebangIndex + 1).trim() + '\n';
         }
     }
+
+    // check for @flow header
+    if (content.match(/^\/\/ @flow|^\/\* @flow \*\//m)) {
+        var flowIndex = content.indexOf('\n');
+        if (flowIndex >= 0) {
+            preamble += content.slice(0, flowIndex + 1);
+            content = content.slice(flowIndex + 1).trim() + '\n';
+        }
+    }
+    preamble += '\n';
 
     // Remove old licenses
     for (var i = 0; i < this.licenseExpressions.length; i++) {
