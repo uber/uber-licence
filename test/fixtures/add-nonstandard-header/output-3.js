@@ -1,4 +1,7 @@
-// Copyright (c) 2016 Uber Technologies, Inc.
+#!/usr/bin/env node
+// @flow
+
+// Copyright (c) 2017 Uber Technologies, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,4 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-Example file content
+function foo(x) {
+  return x * 10;
+}
+foo('Hello, world!');

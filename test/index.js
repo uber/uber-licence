@@ -62,6 +62,48 @@ tape('add-header', function (t) {
 	});
 });
 
+tape('add-nonstandard-header', function (t) {
+	t.plan(3);
+	var fixturePath = path.join(__dirname, 'fixtures', 'add-nonstandard-header');
+	var input1FilePath = path.join(fixturePath, 'input-1.js');
+	var input2FilePath = path.join(fixturePath, 'input-2.js');
+	var input3FilePath = path.join(fixturePath, 'input-3.js');
+	var output1FileContent = fs.readFileSync(path.join(fixturePath, 'output-1.js'), 'utf8');
+	var output2FileContent = fs.readFileSync(path.join(fixturePath, 'output-2.js'), 'utf8');
+	var output3FileContent = fs.readFileSync(path.join(fixturePath, 'output-3.js'), 'utf8');
+
+	// remove the dynamic year portion of the header comment
+	var consistantOutputString = output1FileContent.substring(output1FileContent.indexOf('Permission'));
+	var output1Regex = new RegExp(esc(consistantOutputString));
+	consistantOutputString = output2FileContent.substring(output2FileContent.indexOf('Permission'));
+	var output2Regex = new RegExp(esc(consistantOutputString));
+	consistantOutputString = output3FileContent.substring(output3FileContent.indexOf('Permission'));
+	var output3Regex = new RegExp(esc(consistantOutputString));
+
+	temp.mkdir('add-header', function(mkTempErr, dirPath) {
+	  if (mkTempErr) {
+	  	return console.error('mkTempErr: ' + mkTempErr);
+	  }
+	  process.chdir(dirPath);
+		fs.copySync(input1FilePath, 'input-1.js');
+		fs.copySync(input2FilePath, 'input-2.js');
+		fs.copySync(input3FilePath, 'input-3.js');
+	  exec(uberLicensePath, function(execErr) {
+	  	if (execErr instanceof Error) {
+	  		throw execErr;
+	  	}
+			var input1FileContent = fs.readFileSync('input-1.js', 'utf8');
+			var input2FileContent = fs.readFileSync('input-2.js', 'utf8');
+			var input3FileContent = fs.readFileSync('input-3.js', 'utf8');
+
+			t.true(output1Regex.test(input1FileContent), 'should have flow, then blank line, then license');
+			t.true(output2Regex.test(input2FileContent), 'should have shebang, then blank line, then license');
+			t.true(output3Regex.test(input3FileContent), 'should have shebang, then flow, then blank line, then license');
+			t.end();
+		});
+	});
+});
+
 tape('dont-add-header', function (t) {
 	t.plan(1);
 	var fixturePath = path.join(__dirname, 'fixtures', 'dont-add-header');
