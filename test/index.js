@@ -38,8 +38,8 @@ tape('add-header', function (t) {
 	var outputFileContent = fs.readFileSync(path.join(fixturePath, 'output.js'), 'utf8');
 
 	// remove the dynamic year portion of the header comment
-	var consistantOutputString = outputFileContent.substring(outputFileContent.indexOf('Permission'));
-	var outputRegex = new RegExp(esc(consistantOutputString));
+	var consistentOutputString = "^".concat(esc(outputFileContent).replace(new RegExp(/\d{4}/), "\\d{4}"));
+	var outputRegex = new RegExp(consistentOutputString);
 
 	temp.mkdir('add-header', function(mkTempErr, dirPath) {
 	  if (mkTempErr) {
@@ -73,12 +73,12 @@ tape('add-nonstandard-header', function (t) {
 	var output3FileContent = fs.readFileSync(path.join(fixturePath, 'output-3.js'), 'utf8');
 
 	// remove the dynamic year portion of the header comment
-	var consistantOutputString = output1FileContent.substring(output1FileContent.indexOf('Permission'));
-	var output1Regex = new RegExp(esc(consistantOutputString));
-	consistantOutputString = output2FileContent.substring(output2FileContent.indexOf('Permission'));
-	var output2Regex = new RegExp(esc(consistantOutputString));
-	consistantOutputString = output3FileContent.substring(output3FileContent.indexOf('Permission'));
-	var output3Regex = new RegExp(esc(consistantOutputString));
+	var consistentOutputString = "^".concat(esc(output1FileContent).replace(new RegExp(/\d{4}/), "\\d{4}"));
+	var output1Regex = new RegExp(consistentOutputString);
+	consistentOutputString = "^".concat(esc(output2FileContent).replace(new RegExp(/\d{4}/), "\\d{4}"));
+	var output2Regex = new RegExp(consistentOutputString);
+	consistentOutputString = "^".concat(esc(output3FileContent).replace(new RegExp(/\d{4}/), "\\d{4}"));
+	var output3Regex = new RegExp(consistentOutputString);
 
 	temp.mkdir('add-header', function(mkTempErr, dirPath) {
 	  if (mkTempErr) {
@@ -111,8 +111,8 @@ tape('dont-add-header', function (t) {
 	var outputFileContent = fs.readFileSync(path.join(fixturePath, 'output.js'), 'utf8');
 
 	// remove the dynamic year portion of the header comment
-	var consistantOutputString = outputFileContent.substring(outputFileContent.indexOf('Permission'));
-	var outputRegex = new RegExp(esc(consistantOutputString));
+	var consistentOutputString = "^".concat(esc(outputFileContent).replace(new RegExp(/\d{4}/), "\\d{4}"));
+	var outputRegex = new RegExp(consistentOutputString);
 
 	temp.mkdir('dont-add-header', function(mkTempErr, dirPath) {
 	  if (mkTempErr) {
@@ -125,6 +125,7 @@ tape('dont-add-header', function (t) {
 	  		throw execErr;
 	  	}
 			var inputFileContent = fs.readFileSync('input.js', 'utf8');
+
 			t.true(outputRegex.test(inputFileContent), 'should prepend header');
 			t.end();
 		});

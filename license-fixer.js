@@ -107,7 +107,8 @@ LicenseFixer.prototype.getLicenseForFile = function getLicenseForFile(file) {
 LicenseFixer.prototype.fixContent = function fixContent(file, content) {
     var preamble = '';
     // Check for shebang
-    if (content.match(/^#!|#\s*(en)?coding=/m)) {
+    var foundShebang = content.match(/^#!|#\s*(en)?coding=/m);
+    if (foundShebang) {
         var shebangIndex = content.indexOf('\n');
         if (shebangIndex >= 0) {
             preamble += content.slice(0, shebangIndex + 1);
@@ -116,14 +117,18 @@ LicenseFixer.prototype.fixContent = function fixContent(file, content) {
     }
 
     // check for @flow header
-    if (content.match(/^\/\/ @flow|^\/\* @flow \*\//m)) {
+    var foundFlowHeader = content.match(/^\/\/ @flow|^\/\* @flow \*\//m);
+    if (foundFlowHeader) {
         var flowIndex = content.indexOf('\n');
         if (flowIndex >= 0) {
             preamble += content.slice(0, flowIndex + 1);
             content = content.slice(flowIndex + 1).trim() + '\n';
         }
     }
-    preamble += '\n';
+
+    if (foundShebang || foundFlowHeader) {
+        preamble += '\n';
+    }
 
     // Remove old licenses
     for (var i = 0; i < this.licenseExpressions.length; i++) {
