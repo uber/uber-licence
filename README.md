@@ -64,7 +64,7 @@ We recommend you add two scripts to your package and run
 
 ## MIT Licenced
 
-  [build-png]: https://secure.travis-ci.org/uber/uber-licence.svg
+  [build-png]: https://secure.travis-ci.org/uber/uber-licence.svg?branch=master
   [build]: https://travis-ci.org/uber/uber-licence
   [cover-png]: https://coveralls.io/repos/uber/uber-licence/badge.png
   [cover]: https://coveralls.io/r/uber/uber-licence
