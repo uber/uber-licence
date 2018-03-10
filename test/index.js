@@ -1,4 +1,4 @@
-// Copyright (c) 2017 Uber Technologies, Inc.
+// Copyright (c) 2018 Uber Technologies, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,15 @@ var fs = require('fs-extra');
 var temp = require('temp');
 var exec = require('child_process').exec;
 var esc = require('escape-string-regexp');
+var os = require('os');
 
 // Automatically track and cleanup files at exit
 temp.track();
 
-var uberLicensePath = path.join(__dirname, '..', 'bin', 'licence.js');
+var uberLicenseCall = path.join(__dirname, '..', 'bin', 'licence.js');
+if (os.platform() === 'win32') {
+	uberLicenseCall = 'node ' + uberLicenseCall;
+}
 
 tape('add-header', function (t) {
 	t.plan(2);
@@ -38,7 +42,9 @@ tape('add-header', function (t) {
 	var outputFileContent = fs.readFileSync(path.join(fixturePath, 'output.js'), 'utf8');
 
 	// remove the dynamic year portion of the header comment
-	var consistentOutputString = "^".concat(esc(outputFileContent).replace(new RegExp(/\d{4}/), "\\d{4}"));
+	var consistentOutputString = "^".concat(
+		esc(outputFileContent).replace(new RegExp(/\d{4}/), "\\d{4}").replace(new RegExp(/\r?\n/g), "\\r?\\n")
+	);
 	var outputRegex = new RegExp(consistentOutputString);
 
 	temp.mkdir('add-header', function(mkTempErr, dirPath) {
@@ -48,7 +54,7 @@ tape('add-header', function (t) {
 	  process.chdir(dirPath);
 		fs.copySync(input1FilePath, 'input-1.js');
 		fs.copySync(input2FilePath, 'input-2.js');
-	  exec(uberLicensePath, function(execErr) {
+	  exec(uberLicenseCall, function(execErr) {
 	  	if (execErr instanceof Error) {
 	  		throw execErr;
 	  	}
@@ -73,11 +79,17 @@ tape('add-nonstandard-header', function (t) {
 	var output3FileContent = fs.readFileSync(path.join(fixturePath, 'output-3.js'), 'utf8');
 
 	// remove the dynamic year portion of the header comment
-	var consistentOutputString = "^".concat(esc(output1FileContent).replace(new RegExp(/\d{4}/), "\\d{4}"));
+	var consistentOutputString = "^".concat(
+		esc(output1FileContent).replace(new RegExp(/\d{4}/), "\\d{4}").replace(new RegExp(/\r?\n/g), "\\r?\\n")
+	);
 	var output1Regex = new RegExp(consistentOutputString);
-	consistentOutputString = "^".concat(esc(output2FileContent).replace(new RegExp(/\d{4}/), "\\d{4}"));
+	consistentOutputString = "^".concat(
+		esc(output2FileContent).replace(new RegExp(/\d{4}/), "\\d{4}").replace(new RegExp(/\r?\n/g), "\\r?\\n")
+	);
 	var output2Regex = new RegExp(consistentOutputString);
-	consistentOutputString = "^".concat(esc(output3FileContent).replace(new RegExp(/\d{4}/), "\\d{4}"));
+	consistentOutputString = "^".concat(
+		esc(output3FileContent).replace(new RegExp(/\d{4}/), "\\d{4}").replace(new RegExp(/\r?\n/g), "\\r?\\n")
+	);
 	var output3Regex = new RegExp(consistentOutputString);
 
 	temp.mkdir('add-header', function(mkTempErr, dirPath) {
@@ -88,7 +100,7 @@ tape('add-nonstandard-header', function (t) {
 		fs.copySync(input1FilePath, 'input-1.js');
 		fs.copySync(input2FilePath, 'input-2.js');
 		fs.copySync(input3FilePath, 'input-3.js');
-	  exec(uberLicensePath, function(execErr) {
+	  exec(uberLicenseCall, function(execErr) {
 	  	if (execErr instanceof Error) {
 	  		throw execErr;
 	  	}
@@ -111,7 +123,9 @@ tape('dont-add-header', function (t) {
 	var outputFileContent = fs.readFileSync(path.join(fixturePath, 'output.js'), 'utf8');
 
 	// remove the dynamic year portion of the header comment
-	var consistentOutputString = "^".concat(esc(outputFileContent).replace(new RegExp(/\d{4}/), "\\d{4}"));
+	var consistentOutputString = "^".concat(
+		esc(outputFileContent).replace(new RegExp(/\d{4}/), "\\d{4}").replace(new RegExp(/\r?\n/g), "\\r?\\n")
+	);
 	var outputRegex = new RegExp(consistentOutputString);
 
 	temp.mkdir('dont-add-header', function(mkTempErr, dirPath) {
@@ -120,7 +134,7 @@ tape('dont-add-header', function (t) {
 	  }
 	  process.chdir(dirPath);
 	  fs.copySync(inputFilePath, 'input.js');
-	  exec(uberLicensePath, function(execErr) {
+	  exec(uberLicenseCall, function(execErr) {
 	  	if (execErr instanceof Error) {
 	  		throw execErr;
 	  	}
