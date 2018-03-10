@@ -26,9 +26,6 @@ var exec = require('child_process').exec;
 var esc = require('escape-string-regexp');
 var os = require('os');
 
-// Automatically track and cleanup files at exit
-temp.track();
-
 var uberLicenseCall = path.join(__dirname, '..', 'bin', 'licence.js');
 if (os.platform() === 'win32') {
 	uberLicenseCall = 'node ' + uberLicenseCall;
@@ -51,15 +48,16 @@ tape('add-header', function (t) {
 	  if (mkTempErr) {
 	  	return console.error('mkTempErr: ' + mkTempErr);
 	  }
-	  process.chdir(dirPath);
-		fs.copySync(input1FilePath, 'input-1.js');
-		fs.copySync(input2FilePath, 'input-2.js');
-	  exec(uberLicenseCall, function(execErr) {
+
+	  fs.copySync(input1FilePath, path.join(dirPath, 'input-1.js'));
+	  fs.copySync(input2FilePath, path.join(dirPath, 'input-2.js'));
+	  exec(uberLicenseCall, { cwd: dirPath }, function(execErr) {
 	  	if (execErr instanceof Error) {
 	  		throw execErr;
 	  	}
-			var input1FileContent = fs.readFileSync('input-1.js', 'utf8');
-			var input2FileContent = fs.readFileSync('input-2.js', 'utf8');
+			var input1FileContent = fs.readFileSync(path.join(dirPath, 'input-1.js'), 'utf8');
+			var input2FileContent = fs.readFileSync(path.join(dirPath, 'input-2.js'), 'utf8');
+			temp.cleanupSync();
 
 			t.true(outputRegex.test(input1FileContent), 'should prepend header to file without header');
 			t.true(outputRegex.test(input2FileContent), 'should replace old header (from 2016)');
@@ -96,17 +94,18 @@ tape('add-nonstandard-header', function (t) {
 	  if (mkTempErr) {
 	  	return console.error('mkTempErr: ' + mkTempErr);
 	  }
-	  process.chdir(dirPath);
-		fs.copySync(input1FilePath, 'input-1.js');
-		fs.copySync(input2FilePath, 'input-2.js');
-		fs.copySync(input3FilePath, 'input-3.js');
-	  exec(uberLicenseCall, function(execErr) {
+
+	  fs.copySync(input1FilePath, path.join(dirPath, 'input-1.js'));
+	  fs.copySync(input2FilePath, path.join(dirPath, 'input-2.js'));
+	  fs.copySync(input3FilePath, path.join(dirPath, 'input-3.js'));
+	  exec(uberLicenseCall, { cwd: dirPath }, function(execErr) {
 	  	if (execErr instanceof Error) {
 	  		throw execErr;
 	  	}
-			var input1FileContent = fs.readFileSync('input-1.js', 'utf8');
-			var input2FileContent = fs.readFileSync('input-2.js', 'utf8');
-			var input3FileContent = fs.readFileSync('input-3.js', 'utf8');
+			var input1FileContent = fs.readFileSync(path.join(dirPath, 'input-1.js'), 'utf8');
+			var input2FileContent = fs.readFileSync(path.join(dirPath, 'input-2.js'), 'utf8');
+			var input3FileContent = fs.readFileSync(path.join(dirPath, 'input-3.js'), 'utf8');
+			temp.cleanupSync();
 
 			t.true(output1Regex.test(input1FileContent), 'should have flow, then blank line, then license');
 			t.true(output2Regex.test(input2FileContent), 'should have shebang, then blank line, then license');
@@ -132,13 +131,14 @@ tape('dont-add-header', function (t) {
 	  if (mkTempErr) {
 	  	return console.error('mkTempErr: ' + mkTempErr);
 	  }
-	  process.chdir(dirPath);
-	  fs.copySync(inputFilePath, 'input.js');
-	  exec(uberLicenseCall, function(execErr) {
+
+	  fs.copySync(inputFilePath, path.join(dirPath, 'input.js'));
+	  exec(uberLicenseCall, { cwd: dirPath }, function(execErr) {
 	  	if (execErr instanceof Error) {
 	  		throw execErr;
 	  	}
-			var inputFileContent = fs.readFileSync('input.js', 'utf8');
+			var inputFileContent = fs.readFileSync(path.join(dirPath, 'input.js'), 'utf8');
+			temp.cleanupSync();
 
 			t.true(outputRegex.test(inputFileContent), 'should prepend header');
 			t.end();
