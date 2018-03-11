@@ -9,24 +9,29 @@
 
 <!-- [![browser support][test-png]][test] -->
 
-Utility to deal with Uber OSS licences
+**Utility to deal with Uber OSS licences**
 
 ## Example
 
-`uber-licence`
-
-Running the `uber-licence` binary adds licencing information
+```shell
+> uber-licence
+```
+Running the `uber-licence` binary adds licencing information 
   to every javascript file in your project.
 
-You can run `uber-licence --dry` where it does not
-  mutate any files and instead outputs -1.
+You can run `uber-licence --dry` where it does not mutate 
+  any files and instead outputs -1.
 
-You can use `--file` and `--dir` to specify your own file 
-  and directory filters to select source files to consider.
+You can use `--file` and `--dir` flags to specify your own 
+  file and directory filters to select source files to consider.
 
-## Recommended usage
+Use the `-h` or `--help` flags to see all the available options.
 
-```js
+## Recommended Config
+
+We recommend that you add the following two scripts to your `package.json` and run `check-licence` in a git pre-commit.
+
+```json
 // package.json
 {
   "scripts": {
@@ -45,22 +50,61 @@ You can use `--file` and `--dir` to specify your own file
 }
 ```
 
-We recommend you add two scripts to your package and run
-  `check-licence` in a git pre commit.
-
 ## Installation
 
-`npm install uber-licence`
+```shell
+> npm install uber-licence --save-dev
+```
+
+## CLI Usage
+
+```shell
+> uber-licence [options]
+```
+
+## NodeJS API
+
+```js
+var uberLicence = require('uber-licence');
+uberLicence(options);
+```
+
+## Options:
+
+| API     | CLI             | Type    | Default   | Description | 
+| ---     | ---             | ---     | ---       | --- |
+|`dry`    |`-d`, `--dry`    |`Boolean`|`false`    | does not write to files |
+|`file`   |`-F`, `--file`   |`String` |`*.js`     | pattern of files to modify |
+|         |                 |`Array`[*](#n0)|     | |                            
+|`dir`    |`-D`, `--dir`    |`String` |`.*`<sup>[1](#n1)</sup>| list of directory patterns containing files |
+|         |                 |`Array`[*](#n0)|     |  |
+|`license`|`-L`, `--license`|`String` |`undefined`| intended license template (file)<sup>[2](#n2)</sup> |
+|         |                 |`Array`[*](#n0)|     | |       
+|`legacy` |`-O`, `--legacy` |`String` |`undefined`| list of licenses to replace |
+|         |                 |`Array`[*](#n0)|     | |
+|`verbose`|`-v`, `--verbose`|`Boolean`|`false`    | log skipped and empty files |
+|`silent` |`-s`, `--silent `|`Boolean`|`false`    | do not log fixed files |
+
+<a name="n0">*</a> *On CLI use comma to separate multiple values* 
+eg: `--flag=a,b,c` or `--flag a,b,c`
+
+<a name="n1"><sup>1</sup></a> *The following directories are excluded by default:*
+`.git, node_modules, coverage, env, .tox, vendor, Godeps`
+
+<a name="n2"><sup>2</sup></a> *by default uses Uber's templates*
 
 ## Tests
 
-`npm test`
+```shell
+> npm test
+```
 
 ## Contributors
 
  - [Raynos](https://github.com/raynos)
  - [Kriskowal](https://github.com/kriskowal)
  - [Dawsonbotsford](https://github.com/dawsonbotsford)
+ - [CxRes](https://github.com/cxres)
 
 ## MIT Licenced
 
