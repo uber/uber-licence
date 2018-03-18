@@ -1,4 +1,4 @@
-// Copyright (c) 2017 Uber Technologies, Inc.
+// Copyright (c) 2018 Uber Technologies, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,12 @@ var fs = require('fs-extra');
 var temp = require('temp');
 var exec = require('child_process').exec;
 var esc = require('escape-string-regexp');
+var os = require('os');
 
-// Automatically track and cleanup files at exit
-temp.track();
-
-var uberLicensePath = path.join(__dirname, '..', 'bin', 'licence.js');
+var uberLicenseCall = path.join(__dirname, '..', 'bin', 'licence.js');
+if (os.platform() === 'win32') {
+	uberLicenseCall = 'node ' + uberLicenseCall;
+}
 
 tape('add-header', function (t) {
 	t.plan(2);
@@ -38,22 +39,25 @@ tape('add-header', function (t) {
 	var outputFileContent = fs.readFileSync(path.join(fixturePath, 'output.js'), 'utf8');
 
 	// remove the dynamic year portion of the header comment
-	var consistentOutputString = "^".concat(esc(outputFileContent).replace(new RegExp(/\d{4}/), "\\d{4}"));
+	var consistentOutputString = "^".concat(
+		esc(outputFileContent).replace(new RegExp(/\d{4}/), "\\d{4}").replace(new RegExp(/\r?\n/g), "\\r?\\n")
+	);
 	var outputRegex = new RegExp(consistentOutputString);
 
 	temp.mkdir('add-header', function(mkTempErr, dirPath) {
 	  if (mkTempErr) {
 	  	return console.error('mkTempErr: ' + mkTempErr);
 	  }
-	  process.chdir(dirPath);
-		fs.copySync(input1FilePath, 'input-1.js');
-		fs.copySync(input2FilePath, 'input-2.js');
-	  exec(uberLicensePath, function(execErr) {
+
+	  fs.copySync(input1FilePath, path.join(dirPath, 'input-1.js'));
+	  fs.copySync(input2FilePath, path.join(dirPath, 'input-2.js'));
+	  exec(uberLicenseCall, { cwd: dirPath }, function(execErr) {
 	  	if (execErr instanceof Error) {
 	  		throw execErr;
 	  	}
-			var input1FileContent = fs.readFileSync('input-1.js', 'utf8');
-			var input2FileContent = fs.readFileSync('input-2.js', 'utf8');
+			var input1FileContent = fs.readFileSync(path.join(dirPath, 'input-1.js'), 'utf8');
+			var input2FileContent = fs.readFileSync(path.join(dirPath, 'input-2.js'), 'utf8');
+			temp.cleanupSync();
 
 			t.true(outputRegex.test(input1FileContent), 'should prepend header to file without header');
 			t.true(outputRegex.test(input2FileContent), 'should replace old header (from 2016)');
@@ -73,28 +77,35 @@ tape('add-nonstandard-header', function (t) {
 	var output3FileContent = fs.readFileSync(path.join(fixturePath, 'output-3.js'), 'utf8');
 
 	// remove the dynamic year portion of the header comment
-	var consistentOutputString = "^".concat(esc(output1FileContent).replace(new RegExp(/\d{4}/), "\\d{4}"));
+	var consistentOutputString = "^".concat(
+		esc(output1FileContent).replace(new RegExp(/\d{4}/), "\\d{4}").replace(new RegExp(/\r?\n/g), "\\r?\\n")
+	);
 	var output1Regex = new RegExp(consistentOutputString);
-	consistentOutputString = "^".concat(esc(output2FileContent).replace(new RegExp(/\d{4}/), "\\d{4}"));
+	consistentOutputString = "^".concat(
+		esc(output2FileContent).replace(new RegExp(/\d{4}/), "\\d{4}").replace(new RegExp(/\r?\n/g), "\\r?\\n")
+	);
 	var output2Regex = new RegExp(consistentOutputString);
-	consistentOutputString = "^".concat(esc(output3FileContent).replace(new RegExp(/\d{4}/), "\\d{4}"));
+	consistentOutputString = "^".concat(
+		esc(output3FileContent).replace(new RegExp(/\d{4}/), "\\d{4}").replace(new RegExp(/\r?\n/g), "\\r?\\n")
+	);
 	var output3Regex = new RegExp(consistentOutputString);
 
 	temp.mkdir('add-header', function(mkTempErr, dirPath) {
 	  if (mkTempErr) {
 	  	return console.error('mkTempErr: ' + mkTempErr);
 	  }
-	  process.chdir(dirPath);
-		fs.copySync(input1FilePath, 'input-1.js');
-		fs.copySync(input2FilePath, 'input-2.js');
-		fs.copySync(input3FilePath, 'input-3.js');
-	  exec(uberLicensePath, function(execErr) {
+
+	  fs.copySync(input1FilePath, path.join(dirPath, 'input-1.js'));
+	  fs.copySync(input2FilePath, path.join(dirPath, 'input-2.js'));
+	  fs.copySync(input3FilePath, path.join(dirPath, 'input-3.js'));
+	  exec(uberLicenseCall, { cwd: dirPath }, function(execErr) {
 	  	if (execErr instanceof Error) {
 	  		throw execErr;
 	  	}
-			var input1FileContent = fs.readFileSync('input-1.js', 'utf8');
-			var input2FileContent = fs.readFileSync('input-2.js', 'utf8');
-			var input3FileContent = fs.readFileSync('input-3.js', 'utf8');
+			var input1FileContent = fs.readFileSync(path.join(dirPath, 'input-1.js'), 'utf8');
+			var input2FileContent = fs.readFileSync(path.join(dirPath, 'input-2.js'), 'utf8');
+			var input3FileContent = fs.readFileSync(path.join(dirPath, 'input-3.js'), 'utf8');
+			temp.cleanupSync();
 
 			t.true(output1Regex.test(input1FileContent), 'should have flow, then blank line, then license');
 			t.true(output2Regex.test(input2FileContent), 'should have shebang, then blank line, then license');
@@ -111,20 +122,23 @@ tape('dont-add-header', function (t) {
 	var outputFileContent = fs.readFileSync(path.join(fixturePath, 'output.js'), 'utf8');
 
 	// remove the dynamic year portion of the header comment
-	var consistentOutputString = "^".concat(esc(outputFileContent).replace(new RegExp(/\d{4}/), "\\d{4}"));
+	var consistentOutputString = "^".concat(
+		esc(outputFileContent).replace(new RegExp(/\d{4}/), "\\d{4}").replace(new RegExp(/\r?\n/g), "\\r?\\n")
+	);
 	var outputRegex = new RegExp(consistentOutputString);
 
 	temp.mkdir('dont-add-header', function(mkTempErr, dirPath) {
 	  if (mkTempErr) {
 	  	return console.error('mkTempErr: ' + mkTempErr);
 	  }
-	  process.chdir(dirPath);
-	  fs.copySync(inputFilePath, 'input.js');
-	  exec(uberLicensePath, function(execErr) {
+
+	  fs.copySync(inputFilePath, path.join(dirPath, 'input.js'));
+	  exec(uberLicenseCall, { cwd: dirPath }, function(execErr) {
 	  	if (execErr instanceof Error) {
 	  		throw execErr;
 	  	}
-			var inputFileContent = fs.readFileSync('input.js', 'utf8');
+			var inputFileContent = fs.readFileSync(path.join(dirPath, 'input.js'), 'utf8');
+			temp.cleanupSync();
 
 			t.true(outputRegex.test(inputFileContent), 'should prepend header');
 			t.end();
