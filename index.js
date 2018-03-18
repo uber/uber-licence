@@ -17,6 +17,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 var fs = require('fs');
 var readdirp = require('readdirp');
 
@@ -29,7 +30,7 @@ var updateNotifier = require('update-notifier');
 var pkg = require('./package.json');
 updateNotifier({pkg: pkg}).notify();
 
-function uberLicense(options) {
+function uberLicense(options) { 
     var dry = options.dry;
     var silent = options.silent;
     var verbose = options.verbose;
@@ -55,7 +56,7 @@ function uberLicense(options) {
         // use the Uber defaults.
         licenses = VALID_LICENSES;
     }
-
+    
     // Legacy should not override default license
     if (legacy) {
         for (var j = 0; j < legacy.length; j++) {
@@ -69,7 +70,7 @@ function uberLicense(options) {
         silent: silent,
         verbose: verbose
     });
-
+    
     // Set the intended license text
     licenseFixer.setLicense(licenses[0]);
     // Add a license to match and replace.
@@ -77,7 +78,7 @@ function uberLicense(options) {
     licenses.forEach(function(license) {
         licenseFixer.addLicense(license);
     });
-
+    
     // If the user enters a string argument when using the API version
     var fileFilter = (typeof options.fileFilter === 'string') ? 
         [options.fileFilter] : options.fileFilter;
